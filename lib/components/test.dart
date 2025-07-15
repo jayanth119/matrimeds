@@ -3,7 +3,7 @@ import 'package:matrimeds/pages/aichart_screen.dart';
 import 'package:matrimeds/pages/diseases_screen.dart';
 import 'package:matrimeds/pages/login_screen.dart';
 import 'package:matrimeds/pages/medicine_scan.dart';
-import 'package:matrimeds/pages/settings_screen.dart';
+import 'package:matrimeds/pages/settings_screen.dart'; 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -18,25 +18,17 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _slideAnimation;
   late Animation<double> _fadeAnimation;
+  String _userName = 'User';
+  String _selectedLanguage = 'en';
 
   @override
   void initState() {
     super.initState();
-    _initAnimations();
-    _loadAppLanguage();
+    _loadUserPreferences();
+    _initializeAnimations();
   }
 
-  Future<void> _loadAppLanguage() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? langCode = prefs.getString('app_language') ?? 'en';
-
-    // Ensure it's one of the supported languages
-    if (['en', 'te', 'hi'].contains(langCode)) {
-      context.setLocale(Locale(langCode));
-    }
-  }
-
-  void _initAnimations() {
+  void _initializeAnimations() {
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 1000),
       vsync: this,
@@ -51,6 +43,86 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
 
     _animationController.forward();
+  }
+
+  Future<void> _loadUserPreferences() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _userName = prefs.getString('user_name') ?? 'User';
+      _selectedLanguage = prefs.getString('selected_language') ?? 'en';
+    });
+  }
+
+  Future<void> _saveUserPreferences() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('user_name', _userName);
+    await prefs.setString('selected_language', _selectedLanguage);
+  }
+
+  Future<void> _changeLanguage(String languageCode) async {
+    setState(() {
+      _selectedLanguage = languageCode;
+    });
+    await _saveUserPreferences();
+    
+    // Change the app's locale
+    if (languageCode == 'en') {
+      await context.setLocale(const Locale('en'));
+    } else if (languageCode == 'es') {
+      await context.setLocale(const Locale('es'));
+    } else if (languageCode == 'fr') {
+      await context.setLocale(const Locale('fr'));
+    } else if (languageCode == 'de') {
+      await context.setLocale(const Locale('de'));
+    } else if (languageCode == 'hi') {
+      await context.setLocale(const Locale('hi'));
+    } else if (languageCode == 'te') {
+      await context.setLocale(const Locale('te'));
+    }
+  }
+
+  void _showLanguageDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('select_language'.tr()),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildLanguageOption('en', 'English'),
+              _buildLanguageOption('es', 'Español'),
+              _buildLanguageOption('fr', 'Français'),
+              _buildLanguageOption('de', 'Deutsch'),
+              _buildLanguageOption('hi', 'हिंदी'),
+              _buildLanguageOption('te', 'తెలుగు'),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('cancel'.tr()),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildLanguageOption(String code, String name) {
+    return ListTile(
+      title: Text(name),
+      leading: Radio<String>(
+        value: code,
+        groupValue: _selectedLanguage,
+        onChanged: (String? value) {
+          if (value != null) {
+            _changeLanguage(value);
+            Navigator.pop(context);
+          }
+        },
+      ),
+    );
   }
 
   @override
@@ -82,14 +154,19 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         backgroundColor: Colors.white,
         elevation: 0,
         title: Text(
-          "Matrimeds".tr(), // ✅ Localized title
+          "app_name".tr(),
           style: const TextStyle(color: Color(0xFF2C3E50)),
         ),
         actions: [
           IconButton(
+            icon: const Icon(Icons.language, color: Color(0xFF7F8C8D)),
+            onPressed: _showLanguageDialog,
+            tooltip: "language".tr(),
+          ),
+          IconButton(
             icon: const Icon(Icons.settings, color: Color(0xFF7F8C8D)),
             onPressed: _navigateToSettings,
-            tooltip: "settings".tr(), // ✅ Localized tooltip
+            tooltip: "settings".tr(),
           ),
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.red),
@@ -159,11 +236,18 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('hello_user'.tr(args: ['User']),
-                    style: const TextStyle(
-                        fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
-                Text('help_message'.tr(),
-                    style: const TextStyle(fontSize: 16, color: Colors.white70)),
+                Text(
+                  'hello_user'.tr(namedArgs: {'name': _userName}),
+                  style: const TextStyle(
+                    fontSize: 24, 
+                    fontWeight: FontWeight.bold, 
+                    color: Colors.white
+                  ),
+                ),
+                Text(
+                  'help_message'.tr(),
+                  style: const TextStyle(fontSize: 16, color: Colors.white70),
+                ),
               ],
             ),
           ),
@@ -179,14 +263,19 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10)],
+        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 10)],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('quick_actions'.tr(),
-              style: const TextStyle(
-                  fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF2C3E50))),
+          Text(
+            'quick_actions'.tr(),
+            style: const TextStyle(
+              fontSize: 20, 
+              fontWeight: FontWeight.bold, 
+              color: Color(0xFF2C3E50)
+            ),
+          ),
           const SizedBox(height: 15),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -239,12 +328,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               child: Icon(icon, size: 30, color: color),
             ),
             const SizedBox(height: 8),
-            Text(label,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF2C3E50))),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF2C3E50)
+              ),
+            ),
           ],
         ),
       ),
@@ -255,9 +347,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('features'.tr(),
-            style: const TextStyle(
-                fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF2C3E50))),
+        Text(
+          'features'.tr(),
+          style: const TextStyle(
+            fontSize: 20, 
+            fontWeight: FontWeight.bold, 
+            color: Color(0xFF2C3E50)
+          ),
+        ),
         const SizedBox(height: 15),
         _buildFeatureCard(
           title: 'medicine_analysis'.tr(),
@@ -307,8 +404,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             Container(
               width: 60,
               height: 60,
-              decoration:
-                  BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1), 
+                borderRadius: BorderRadius.circular(12)
+              ),
               child: Icon(icon, size: 30, color: color),
             ),
             const SizedBox(width: 15),
@@ -316,14 +415,19 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title,
-                      style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF2C3E50))),
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF2C3E50)
+                    ),
+                  ),
                   const SizedBox(height: 5),
-                  Text(description,
-                      style: const TextStyle(fontSize: 14, color: Color(0xFF7F8C8D))),
+                  Text(
+                    description,
+                    style: const TextStyle(fontSize: 14, color: Color(0xFF7F8C8D)),
+                  ),
                 ],
               ),
             ),
@@ -348,8 +452,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('health_tip_title'.tr(),
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+          Text(
+            'health_tip_title'.tr(),
+            style: const TextStyle(
+              fontSize: 18, 
+              fontWeight: FontWeight.bold, 
+              color: Colors.white
+            ),
+          ),
           const SizedBox(height: 10),
           Text(
             'health_tip_content'.tr(),

@@ -6,6 +6,7 @@ import 'package:matrimeds/pages/medicine_scan.dart';
 import 'package:matrimeds/pages/settings_screen.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:matrimeds/services/tts_service.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -24,6 +25,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     super.initState();
     _initAnimations();
     _loadAppLanguage();
+    TTSService.initTTS();
   }
 
   Future<void> _loadAppLanguage() async {
@@ -86,6 +88,29 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           style: const TextStyle(color: Color(0xFF2C3E50)),
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.mic, color: Color(0xFF1E88E5)),
+            onPressed: () async {
+              // Text changes based on language
+              String welcomeMessage;
+              switch (context.locale.languageCode) {
+                case 'hi':
+                  welcomeMessage =
+                      "maitrimeds mein aapaka svaagat hai! main aapakee kaise madad kar sakata hoon?";
+                  break;
+                case 'te':
+                  welcomeMessage =
+                      "Māṭrimeḍs ki svāgataṁ! Nēnu mīku elā sahāyaṁ cēyagaalanu?";
+                  break;
+                default:
+                  welcomeMessage =
+                      "Welcome to Matrimeds! How can I assist you today?";
+              }
+
+              await TTSService.speak(welcomeMessage);
+            },
+            tooltip: "speak".tr(),
+          ),
           IconButton(
             icon: const Icon(Icons.settings, color: Color(0xFF7F8C8D)),
             onPressed: _navigateToSettings,
@@ -161,9 +186,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               children: [
                 Text('hello_user'.tr(args: ['User']),
                     style: const TextStyle(
-                        fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white)),
                 Text('help_message'.tr(),
-                    style: const TextStyle(fontSize: 16, color: Colors.white70)),
+                    style:
+                        const TextStyle(fontSize: 16, color: Colors.white70)),
               ],
             ),
           ),
@@ -186,7 +214,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         children: [
           Text('quick_actions'.tr(),
               style: const TextStyle(
-                  fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF2C3E50))),
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF2C3E50))),
           const SizedBox(height: 15),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -257,7 +287,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       children: [
         Text('features'.tr(),
             style: const TextStyle(
-                fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF2C3E50))),
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF2C3E50))),
         const SizedBox(height: 15),
         _buildFeatureCard(
           title: 'medicine_analysis'.tr(),
@@ -307,8 +339,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             Container(
               width: 60,
               height: 60,
-              decoration:
-                  BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+              decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12)),
               child: Icon(icon, size: 30, color: color),
             ),
             const SizedBox(width: 15),
@@ -323,11 +356,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           color: Color(0xFF2C3E50))),
                   const SizedBox(height: 5),
                   Text(description,
-                      style: const TextStyle(fontSize: 14, color: Color(0xFF7F8C8D))),
+                      style: const TextStyle(
+                          fontSize: 14, color: Color(0xFF7F8C8D))),
                 ],
               ),
             ),
-            const Icon(Icons.arrow_forward_ios, size: 16, color: Color(0xFF7F8C8D)),
+            const Icon(Icons.arrow_forward_ios,
+                size: 16, color: Color(0xFF7F8C8D)),
           ],
         ),
       ),
@@ -349,7 +384,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text('health_tip_title'.tr(),
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+              style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white)),
           const SizedBox(height: 10),
           Text(
             'health_tip_content'.tr(),

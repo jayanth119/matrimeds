@@ -121,5 +121,7 @@
   "location_permission": "సమీప సేవల కోసం లొకేషన్ అనుమతి అవసరం.",
   "microphone_permission": "వాయిస్ కమాండ్ల కోసం మైక్రోఫోన్ అనుమతి అవసరం.",
   "grant_permission": "అనుమతి ఇవ్వండి",
-  "deny_permission": "అనుమతి నిరాకరించండి"
+  "deny_permission": "అనుమతి నిరాకరించండి",
+  "should_speak" : "మాట్లాడాలి",
+  "should_speak_dir" : "వాయిస్ ఆదేశాలను ప్రారంభించడానికి తనిఖీ చేయండి"
 }

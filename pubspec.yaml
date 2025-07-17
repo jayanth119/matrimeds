@@ -50,7 +50,8 @@ dev_dependencies:
   image_picker:  
   http:
   easy_localization :
-  flutter_tts :  
+  flutter_tts : 
+  speech_to_text :  
 
 
 flutter_launcher_icons:

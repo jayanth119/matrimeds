@@ -121,5 +121,7 @@
   "location_permission": "निकटवर्ती सेवाओं के लिए स्थान अनुमति आवश्यक है।",
   "microphone_permission": "वॉइस कमांड के लिए माइक्रोफोन अनुमति आवश्यक है।",
   "grant_permission": "अनुमति दें",
-  "deny_permission": "अनुमति अस्वीकार करें"
+  "deny_permission": "अनुमति अस्वीकार करें",
+  "should_speak" : "बोलना चाहिए",
+  "should_speak_dir" : "ध्वनि आदेश सक्षम करने के लिए जाँच करें"
 }

@@ -10,15 +10,6 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  final _formKey = GlobalKey<FormState>();
-  
-  // User profile controllers
-  final _nameController = TextEditingController();
-  final _emailController = TextEditingController();
-  final _phoneController = TextEditingController();
-  final _ageController = TextEditingController();
-  
-  String _selectedGender = 'Male';
   String _selectedLanguage = 'English';
   
   final List<String> _genders = ['Male', 'Female', 'Other'];
@@ -36,33 +27,6 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Future<void> _loadUserData() async {
     final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _nameController.text = prefs.getString('user_name') ?? '';
-      _emailController.text = prefs.getString('user_email') ?? '';
-      _phoneController.text = prefs.getString('user_phone') ?? '';
-      _ageController.text = prefs.getString('user_age') ?? '';
-      _selectedGender = prefs.getString('user_gender') ?? 'Male';
-      _selectedLanguage = prefs.getString('app_language') ?? 'English';
-    });
-  }
-
-  Future<void> _saveUserData() async {
-    if (_formKey.currentState!.validate()) {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('user_name', _nameController.text);
-      await prefs.setString('user_email', _emailController.text);
-      await prefs.setString('user_phone', _phoneController.text);
-      await prefs.setString('user_age', _ageController.text);
-      await prefs.setString('user_gender', _selectedGender);
-      await prefs.setString('app_language', _selectedLanguage);
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('settings_saved'.tr()),
-          backgroundColor: Colors.green,
-        ),
-      );
-    }
   }
 
   void _changeLanguage(String languageCode) {
@@ -99,30 +63,17 @@ class _SettingsPageState extends State<SettingsPage> {
             fontWeight: FontWeight.bold,
           ),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.save, color: Color(0xFF4CAF50)),
-            onPressed: _saveUserData,
-            tooltip: 'save_settings'.tr(),
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
-        child: Form(
-          key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildProfileSection(),
-              const SizedBox(height: 30),
               _buildLanguageSection(),
               const SizedBox(height: 30),
               _buildAppPreferences(),
               const SizedBox(height: 40),
-              _buildSaveButton(),
             ],
-          ),
         ),
       ),
     );
@@ -191,98 +142,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           
           const SizedBox(height: 20),
-          
-          // Name Field
-          _buildTextFormField(
-            controller: _nameController,
-            label: 'full_name'.tr(),
-            icon: Icons.person_outline,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'please_enter_name'.tr();
-              }
-              return null;
-            },
-          ),
-          
-          const SizedBox(height: 15),
-          
-          // Email Field
-          _buildTextFormField(
-            controller: _emailController,
-            label: 'email'.tr(),
-            icon: Icons.email_outlined,
-            keyboardType: TextInputType.emailAddress,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'please_enter_email'.tr();
-              }
-              if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-                return 'please_enter_valid_email'.tr();
-              }
-              return null;
-            },
-          ),
-          
-          const SizedBox(height: 15),
-          
-          // Phone Field
-          _buildTextFormField(
-            controller: _phoneController,
-            label: 'phone_number'.tr(),
-            icon: Icons.phone_outlined,
-            keyboardType: TextInputType.phone,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'please_enter_phone'.tr();
-              }
-              if (value.length < 10) {
-                return 'please_enter_valid_phone'.tr();
-              }
-              return null;
-            },
-          ),
-          
-          const SizedBox(height: 15),
-          
-          // Age and Gender Row
-          Row(
-            children: [
-              Expanded(
-                child: _buildTextFormField(
-                  controller: _ageController,
-                  label: 'age'.tr(),
-                  icon: Icons.cake_outlined,
-                  keyboardType: TextInputType.number,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'please_enter_age'.tr();
-                    }
-                    int? age = int.tryParse(value);
-                    if (age == null || age < 1 || age > 120) {
-                      return 'please_enter_valid_age'.tr();
-                    }
-                    return null;
-                  },
-                ),
-              ),
-              const SizedBox(width: 15),
-              Expanded(
-                child: _buildDropdownField(
-                  value: _selectedGender,
-                  label: 'gender'.tr(),
-                  icon: Icons.person_outline,
-                  items: _genders,
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedGender = value!;
-                    });
-                  },
-                ),
-              ),
-            ],
-          ),
-        ],
+       ],
       ),
     );
   }
@@ -443,16 +303,16 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           
           const SizedBox(height: 15),
-          
-          // Privacy Settings
-          _buildTile(
-            title: 'privacy_settings'.tr(),
-            subtitle: 'manage_data_privacy'.tr(),
-            icon: Icons.privacy_tip_outlined,
-            onTap: () {
-              // Navigate to privacy settings
+          // should speak 
+            _buildSwitchTile(
+            title: 'should_speak'.tr(),
+            subtitle: 'should_speak_dir'.tr(),
+            icon: Icons.audiotrack,
+            value: false,
+            onChanged: (value) {
+              // Handle dark mode toggle
             },
-          ),
+          ) ,
           
           const SizedBox(height: 15),
           
@@ -470,29 +330,6 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  Widget _buildSaveButton() {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: _saveUserData,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF4CAF50),
-          padding: const EdgeInsets.symmetric(vertical: 15),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-        child: Text(
-          'save_changes'.tr(),
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
-      ),
-    );
-  }
 
   Widget _buildTextFormField({
     required TextEditingController controller,
@@ -671,9 +508,9 @@ class _SettingsPageState extends State<SettingsPage> {
               color: Color(0xFF1E88E5),
             ),
             const SizedBox(height: 15),
-            Text(
+            const Text(
               'Matrimeds',
-              style: const TextStyle(
+              style:  TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: Color(0xFF2C3E50),
@@ -710,10 +547,6 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   void dispose() {
-    _nameController.dispose();
-    _emailController.dispose();
-    _phoneController.dispose();
-    _ageController.dispose();
     super.dispose();
   }
 }

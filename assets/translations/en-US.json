@@ -125,5 +125,8 @@
   "location_permission": "Location permission is required for nearby services.",
   "microphone_permission": "Microphone permission is required for voice commands.",
   "grant_permission": "Grant Permission",
-  "deny_permission": "Deny Permission"
+  "deny_permission": "Deny Permission",
+  "should_speak" : "Should Speak",
+  "should_speak_dir" : "Check to enable voice commands."
+
 }

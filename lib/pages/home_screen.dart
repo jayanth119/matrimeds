@@ -5,6 +5,7 @@ import 'package:matrimeds/pages/login_screen.dart';
 import 'package:matrimeds/pages/medicine_scan.dart';
 import 'package:matrimeds/pages/settings_screen.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:matrimeds/services/tts_shorthand.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:matrimeds/services/tts_service.dart';
 
@@ -69,13 +70,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
-  void _navigateToSettings() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const SettingsPage()),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -89,32 +83,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.mic, color: Color(0xFF1E88E5)),
-            onPressed: () async {
-              // Text changes based on language
-              String welcomeMessage;
-              switch (context.locale.languageCode) {
-                case 'hi':
-                  welcomeMessage =
-                      "maitrimeds mein aapaka svaagat hai! main aapakee kaise madad kar sakata hoon?";
-                  break;
-                case 'te':
-                  welcomeMessage =
-                      "Māṭrimeḍs ki svāgataṁ! Nēnu mīku elā sahāyaṁ cēyagaalanu?";
-                  break;
-                default:
-                  welcomeMessage =
-                      "Welcome to Matrimeds! How can I assist you today?";
-              }
-
-              await TTSService.speak(welcomeMessage);
-            },
-            tooltip: "speak".tr(),
-          ),
-          IconButton(
             icon: const Icon(Icons.settings, color: Color(0xFF7F8C8D)),
-            onPressed: _navigateToSettings,
-            tooltip: "settings".tr(), // ✅ Localized tooltip
+            onPressed: () => {
+            speaker("settings"),
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SettingsPage()),
+              )
+            },
+            tooltip: "settings".tr(),
           ),
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.red),

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:matrimeds/services/stt_service.dart';
+
 class AIChatPage extends StatefulWidget {
   const AIChatPage({super.key});
 
@@ -9,6 +11,8 @@ class AIChatPage extends StatefulWidget {
 class _AIChatPageState extends State<AIChatPage> with TickerProviderStateMixin {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  final SpeechService _speechService = SpeechService();
+
   List<ChatMessage> _messages = [];
   bool _isTyping = false;
   late AnimationController _typingAnimationController;
@@ -20,8 +24,9 @@ class _AIChatPageState extends State<AIChatPage> with TickerProviderStateMixin {
       duration: const Duration(milliseconds: 1500),
       vsync: this,
     )..repeat();
-    
-    // Add welcome message
+
+    _speechService.init();
+
     _messages.add(ChatMessage(
       message: "Hello! I'm your AI health assistant. How can I help you today?",
       isUser: false,
@@ -52,7 +57,6 @@ class _AIChatPageState extends State<AIChatPage> with TickerProviderStateMixin {
 
     _scrollToBottom();
 
-    // Simulate AI response
     await Future.delayed(const Duration(seconds: 2));
 
     String aiResponse = _generateAIResponse(userMessage);
@@ -69,10 +73,14 @@ class _AIChatPageState extends State<AIChatPage> with TickerProviderStateMixin {
     _scrollToBottom();
   }
 
+  void _sendVoiceMessage(String text) {
+    if (text.trim().isEmpty) return;
+    _messageController.text = text;
+    _sendMessage();
+  }
+
   String _generateAIResponse(String userMessage) {
-    // Simple response logic based on keywords
     String message = userMessage.toLowerCase();
-    
     if (message.contains('headache') || message.contains('head pain')) {
       return "For headaches, try resting in a quiet, dark room and staying hydrated. If headaches persist or are severe, please consult a healthcare professional.";
     } else if (message.contains('fever') || message.contains('temperature')) {
@@ -258,7 +266,7 @@ class _AIChatPageState extends State<AIChatPage> with TickerProviderStateMixin {
   Widget _buildTypingDot(int index) {
     double animationValue = (_typingAnimationController.value + (index * 0.3)) % 1.0;
     double scale = animationValue < 0.5 ? 1.0 + (animationValue * 0.5) : 1.5 - ((animationValue - 0.5) * 0.5);
-    
+
     return Transform.scale(
       scale: scale,
       child: Container(
@@ -291,7 +299,7 @@ class _AIChatPageState extends State<AIChatPage> with TickerProviderStateMixin {
             child: TextField(
               controller: _messageController,
               decoration: InputDecoration(
-                hintText: 'Type your health question...',
+                hintText: 'Type or speak your question...',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(25),
                   borderSide: BorderSide.none,
@@ -302,6 +310,26 @@ class _AIChatPageState extends State<AIChatPage> with TickerProviderStateMixin {
               ),
               onSubmitted: (value) => _sendMessage(),
             ),
+          ),
+          const SizedBox(width: 8),
+          IconButton(
+            icon: Icon(
+              _speechService.isListening ? Icons.mic_off : Icons.mic,
+              color: _speechService.isListening ? Colors.red : Colors.grey,
+            ),
+            onPressed: () async {
+              if (_speechService.isListening) {
+                await _speechService.stopListening();
+                _sendVoiceMessage(_speechService.recognizedText);
+              } else {
+                await _speechService.startListening(onResult: (text) {
+                  setState(() {
+                    _messageController.text = text;
+                  });
+                });
+              }
+              setState(() {});
+            },
           ),
           const SizedBox(width: 8),
           Container(

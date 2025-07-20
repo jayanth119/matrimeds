@@ -52,6 +52,7 @@ dev_dependencies:
   easy_localization :
   flutter_tts : 
   speech_to_text :  
+  firebase_core : 
 
 
 flutter_launcher_icons:

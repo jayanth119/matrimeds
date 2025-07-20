@@ -15,6 +15,8 @@ void main() async {
           Locale('te', 'IN'), // Telugu
         ],
         path: 'assets/translations',
+        saveLocale: true,
+         useOnlyLangCode: false, 
         fallbackLocale: const Locale('en', 'US'),
         child: const MyApp()),
   );
@@ -61,7 +63,6 @@ class _MyAppState extends State<MyApp> {
       title: 'Matrimeds',
       theme: ThemeData(
         primarySwatch: Colors.blue,
-        fontFamily: 'Roboto',
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       localizationsDelegates: context.localizationDelegates,

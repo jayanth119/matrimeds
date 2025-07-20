@@ -90,6 +90,11 @@ flutter:
   assets:
     - assets/images/
     - assets/translations/
+    - assets/translations/en-US.json
+    - assets/translations/hi-IN.json
+    - assets/translations/te-IN.json
+
+
 
 
   # An image asset can refer to one or more resolution-specific "variants", see

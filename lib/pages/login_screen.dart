@@ -94,7 +94,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     controller: usernameController,
                     decoration: const InputDecoration(
                         border: InputBorder.none,
-                        hintText: "Username",
+                        hintText: "Email",
                         contentPadding: EdgeInsets.all(20)),
                     onEditingComplete: () => FocusScope.of(context).nextFocus(),
                   ),

@@ -11,8 +11,7 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPageState extends State<SettingsPage> {
   String _selectedLanguage = 'English';
-  
-  final List<String> _genders = ['Male', 'Female', 'Other'];
+
   final List<Map<String, String>> _languages = [
     {'code': 'en', 'name': 'English'},
     {'code': 'hi', 'name': 'हिंदी'},
@@ -44,6 +43,15 @@ class _SettingsPageState extends State<SettingsPage> {
     context.setLocale(newLocale);
   }
 
+  void _showLockedFeatureMessage() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('This feature is locked in the current version.'),
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -66,83 +74,15 @@ class _SettingsPageState extends State<SettingsPage> {
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildLanguageSection(),
-              const SizedBox(height: 30),
-              _buildAppPreferences(),
-              const SizedBox(height: 40),
-            ],
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildLanguageSection(),
+            const SizedBox(height: 30),
+            _buildAppPreferences(),
+            const SizedBox(height: 40),
+          ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildProfileSection() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
-        boxShadow: const [
-          BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, 5)),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(Icons.person, color: Color(0xFF1E88E5), size: 24),
-              const SizedBox(width: 10),
-              Text(
-                'profile_information'.tr(),
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF2C3E50),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          
-          // Profile Avatar
-          Center(
-            child: Stack(
-              children: [
-                CircleAvatar(
-                  radius: 50,
-                  backgroundColor: const Color(0xFF1E88E5).withOpacity(0.1),
-                  child: const Icon(
-                    Icons.person,
-                    size: 60,
-                    color: Color(0xFF1E88E5),
-                  ),
-                ),
-                Positioned(
-                  bottom: 0,
-                  right: 0,
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF4CAF50),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.edit,
-                      size: 16,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          
-          const SizedBox(height: 20),
-       ],
       ),
     );
   }
@@ -175,7 +115,6 @@ class _SettingsPageState extends State<SettingsPage> {
             ],
           ),
           const SizedBox(height: 20),
-          
           Text(
             'select_app_language'.tr(),
             style: const TextStyle(
@@ -183,10 +122,7 @@ class _SettingsPageState extends State<SettingsPage> {
               color: Color(0xFF7F8C8D),
             ),
           ),
-          
           const SizedBox(height: 15),
-          
-          // Language Selection
           ..._languages.map((language) {
             return Container(
               margin: const EdgeInsets.only(bottom: 10),
@@ -277,45 +213,25 @@ class _SettingsPageState extends State<SettingsPage> {
             ],
           ),
           const SizedBox(height: 20),
-          
-          // Notification Settings
-          _buildSwitchTile(
+          // Locked Features
+          _buildLockedSwitchTile(
             title: 'notifications'.tr(),
             subtitle: 'receive_health_reminders'.tr(),
             icon: Icons.notifications_outlined,
-            value: true,
-            onChanged: (value) {
-              // Handle notification toggle
-            },
           ),
-          
           const SizedBox(height: 15),
-          
-          // Dark Mode
-          _buildSwitchTile(
+          _buildLockedSwitchTile(
             title: 'dark_mode'.tr(),
             subtitle: 'enable_dark_theme'.tr(),
             icon: Icons.dark_mode_outlined,
-            value: false,
-            onChanged: (value) {
-              // Handle dark mode toggle
-            },
           ),
-          
           const SizedBox(height: 15),
-          // should speak 
-            _buildSwitchTile(
+          _buildLockedSwitchTile(
             title: 'should_speak'.tr(),
             subtitle: 'should_speak_dir'.tr(),
             icon: Icons.audiotrack,
-            value: false,
-            onChanged: (value) {
-              // Handle dark mode toggle
-            },
-          ) ,
-          
+          ),
           const SizedBox(height: 15),
-          
           // About
           _buildTile(
             title: 'about'.tr(),
@@ -330,114 +246,49 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-
-  Widget _buildTextFormField({
-    required TextEditingController controller,
-    required String label,
-    required IconData icon,
-    TextInputType keyboardType = TextInputType.text,
-    String? Function(String?)? validator,
-  }) {
-    return TextFormField(
-      controller: controller,
-      keyboardType: keyboardType,
-      validator: validator,
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: Icon(icon, color: const Color(0xFF7F8C8D)),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Color(0xFF1E88E5), width: 2),
-        ),
-        filled: true,
-        fillColor: Colors.grey.withOpacity(0.1),
-      ),
-    );
-  }
-
-  Widget _buildDropdownField({
-    required String value,
-    required String label,
-    required IconData icon,
-    required List<String> items,
-    required Function(String?) onChanged,
-  }) {
-    return DropdownButtonFormField<String>(
-      value: value,
-      onChanged: onChanged,
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: Icon(icon, color: const Color(0xFF7F8C8D)),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Color(0xFF1E88E5), width: 2),
-        ),
-        filled: true,
-        fillColor: Colors.grey.withOpacity(0.1),
-      ),
-      items: items.map((String item) {
-        return DropdownMenuItem<String>(
-          value: item,
-          child: Text(item),
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _buildSwitchTile({
+  Widget _buildLockedSwitchTile({
     required String title,
     required String subtitle,
     required IconData icon,
-    required bool value,
-    required Function(bool) onChanged,
   }) {
-    return Container(
-      padding: const EdgeInsets.all(15),
-      decoration: BoxDecoration(
-        color: Colors.grey.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: const Color(0xFF7F8C8D)),
-          const SizedBox(width: 15),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF2C3E50),
+    return GestureDetector(
+      onTap: _showLockedFeatureMessage,
+      child: Container(
+        padding: const EdgeInsets.all(15),
+        decoration: BoxDecoration(
+          color: Colors.grey.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: const Color(0xFF7F8C8D)),
+            const SizedBox(width: 15),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF2C3E50),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  subtitle,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Color(0xFF7F8C8D),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF7F8C8D),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          Switch(
-            value: value,
-            onChanged: onChanged,
-            activeColor: const Color(0xFF4CAF50),
-          ),
-        ],
+            const Icon(Icons.lock, color: Color(0xFF9C27B0)),
+          ],
+        ),
       ),
     );
   }
@@ -502,15 +353,11 @@ class _SettingsPageState extends State<SettingsPage> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
-              Icons.medical_services,
-              size: 50,
-              color: Color(0xFF1E88E5),
-            ),
+            const Icon(Icons.medical_services, size: 50, color: Color(0xFF1E88E5)),
             const SizedBox(height: 15),
             const Text(
               'Matrimeds',
-              style:  TextStyle(
+              style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: Color(0xFF2C3E50),
@@ -543,10 +390,5 @@ class _SettingsPageState extends State<SettingsPage> {
         ],
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
   }
 }

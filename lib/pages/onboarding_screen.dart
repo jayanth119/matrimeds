@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:matrimeds/pages/login_screen.dart';
 import 'package:matrimeds/utils/size_config.dart';
-
 import 'package:matrimeds/utils/onboarding_contents.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({Key? key}) : super(key: key);
@@ -44,6 +45,19 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
+  // Function to mark onboarding as completed and navigate
+  void _completeOnboarding() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('onboardingCompleted', true);
+    
+    if (!mounted) return;
+    
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const LoginScreen()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
@@ -67,10 +81,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     padding: const EdgeInsets.all(40.0),
                     child: Column(
                       children: [
-                        Expanded( // Wrap the Image.asset with Expanded
+                        Expanded(
                           child: Image.asset(
                             contents[i].image,
-                            // Remove fixed height here, let it be flexible
                           ),
                         ),
                         SizedBox(
@@ -119,7 +132,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       ? Padding(
                           padding: const EdgeInsets.all(30),
                           child: ElevatedButton(
-                            onPressed: () {},
+                            onPressed: _completeOnboarding, // Use the new function
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.black,
                               shape: RoundedRectangleBorder(
@@ -142,9 +155,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               TextButton(
-                                onPressed: () {
-                                  _controller.jumpToPage(2);
-                                },
+                                onPressed: _completeOnboarding, // Skip also completes onboarding
                                 style: TextButton.styleFrom(
                                   elevation: 0,
                                   textStyle: TextStyle(

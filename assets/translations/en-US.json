@@ -29,7 +29,7 @@
   
   "app_name": "Matrimeds",
   "app_subtitle": "Your Health Companion",
-  "hello_user": "Hello, {name}!",
+  "hello_user": "Hello, User!",
   "help_message": "How can I help you today?",
   "quick_actions": "Quick Actions",
   "scan_medicine": "Scan Medicine",

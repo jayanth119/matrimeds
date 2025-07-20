@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+
 class MedicineScannerPage extends StatefulWidget {
   const MedicineScannerPage({super.key});
 
@@ -17,6 +17,7 @@ class _MedicineScannerPageState extends State<MedicineScannerPage> {
   final ImagePicker _picker = ImagePicker();
   bool _isLoading = false;
   Map<String, dynamic>? _medicineInfo;
+  String? _errorMessage;
 
   Future<void> _pickImage(ImageSource source) async {
     try {
@@ -24,43 +25,98 @@ class _MedicineScannerPageState extends State<MedicineScannerPage> {
       if (image != null) {
         setState(() {
           _image = File(image.path);
+          _medicineInfo = null;
+          _errorMessage = null;
         });
         _analyzeMedicine();
       }
     } catch (e) {
       print('Error picking image: $e');
+      setState(() {
+        _errorMessage = 'Failed to pick image: $e';
+      });
     }
   }
 
   Future<void> _analyzeMedicine() async {
+    if (_image == null) return;
+
     setState(() {
       _isLoading = true;
+      _errorMessage = null;
     });
 
-    // Simulate API call for medicine analysis
-    await Future.delayed(const Duration(seconds: 3));
+    try {
+      // Create multipart request
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse('https://silver-octo-winner.onrender.com/api/medicine'),
+      );
 
-    // Mock medicine data
-    setState(() {
-      _medicineInfo = {
-        'name': 'Paracetamol 500mg',
-        'generic_name': 'Acetaminophen',
-        'brand_names': ['Tylenol', 'Calpol', 'Panadol'],
-        'usage': 'Pain relief and fever reduction',
-        'dosage': 'Adults: 500mg-1000mg every 4-6 hours, Maximum 4000mg per day',
-        'side_effects': ['Nausea', 'Stomach upset', 'Allergic reactions (rare)'],
-        'precautions': [
-          'Do not exceed recommended dosage',
-          'Avoid alcohol consumption',
-          'Consult doctor if pregnant or breastfeeding'
-        ],
-        'contraindications': ['Liver disease', 'Alcohol dependency'],
-        'interactions': ['Warfarin', 'Carbamazepine', 'Phenytoin'],
-        'storage': 'Store in cool, dry place away from direct sunlight',
-        'expiry_check': 'Always check expiry date before use'
-      };
-      _isLoading = false;
-    });
+      // Add image file
+      request.files.add(
+        await http.MultipartFile.fromPath(
+          'photo',
+          _image!.path,
+        ),
+      );
+
+      // Add language parameter
+      request.fields['language'] = 'en'; // or 'te' for Telugu
+
+      // Send request
+      var response = await request.send();
+
+      // Get response
+      var responseString = await response.stream.bytesToString();
+      var responseData = json.decode(responseString);
+
+      if (response.statusCode == 200) {
+        if (responseData['status'] == 'success' && responseData['data'] != null && responseData['data'].isNotEmpty) {
+          setState(() {
+            _medicineInfo = _formatMedicineData(responseData['data'][0]);
+          });
+        } else {
+          setState(() {
+            _errorMessage = 'No medicine information found';
+          });
+        }
+      } else {
+        setState(() {
+          _errorMessage = 'Failed to analyze medicine: ${responseData['message'] ?? 'Unknown error'}';
+        });
+      }
+    } catch (e) {
+      print('Error analyzing medicine: $e');
+      setState(() {
+        _errorMessage = 'Failed to analyze medicine: $e';
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  Map<String, dynamic> _formatMedicineData(Map<String, dynamic> apiData) {
+    return {
+      'name': apiData['medicine_name'] ?? 'Unknown Medicine',
+      'generic_name': apiData['medicine_name'] ?? 'Unknown', // Adjust based on actual API response
+      'brand_names': [], // Not available in current API response
+      'usage': (apiData['uses_and_benefits'] as List<dynamic>?)?.join(', ') ?? 'Unknown',
+      'dosage': apiData['dosage'] ?? 'Consult your doctor',
+      'side_effects': (apiData['side_effects'] as List<dynamic>?)?.cast<String>() ?? ['None reported'],
+      'precautions': (apiData['precautions'] as List<dynamic>?)?.cast<String>() ?? ['None specified'],
+      'contraindications': [], // Not available in current API response
+      'interactions': [], // Not available in current API response
+      'storage': 'Store in cool, dry place', // Not available in current API response
+      'expiry_check': 'Always check expiry date before use', // Not available in current API response
+      'conditions_treated': (apiData['conditions_treated'] as List<dynamic>?)?.cast<String>() ?? [],
+      'diseases': (apiData['diseases'] as List<dynamic>?)?.cast<String>() ?? [],
+      'time_to_improve': apiData['time_to_improve'] is Map ? 
+        (apiData['time_to_improve'] as Map<String, dynamic>).entries.map((e) => '${e.key}: ${e.value}').join('\n') : 
+        'Varies by condition',
+    };
   }
 
   @override
@@ -79,6 +135,7 @@ class _MedicineScannerPageState extends State<MedicineScannerPage> {
             _buildImageSection(),
             const SizedBox(height: 20),
             if (_isLoading) _buildLoadingWidget(),
+            if (_errorMessage != null) _buildErrorWidget(),
             if (_medicineInfo != null) _buildMedicineReport(),
           ],
         ),
@@ -178,6 +235,7 @@ class _MedicineScannerPageState extends State<MedicineScannerPage> {
                 setState(() {
                   _image = null;
                   _medicineInfo = null;
+                  _errorMessage = null;
                 });
               },
             ),
@@ -195,17 +253,48 @@ class _MedicineScannerPageState extends State<MedicineScannerPage> {
         borderRadius: BorderRadius.circular(20),
       ),
       child: Column(
-        children: const  [
-           CircularProgressIndicator(
+        children: const [
+          CircularProgressIndicator(
             valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4CAF50)),
           ),
-           SizedBox(height: 20),
-           Text(
+          SizedBox(height: 20),
+          Text(
             'Analyzing medicine...',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
               color: Color(0xFF2C3E50),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorWidget() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFEBEE),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFFF5252), width: 1),
+      ),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.error,
+            color: Color(0xFFD32F2F),
+            size: 24,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              _errorMessage ?? 'An unknown error occurred',
+              style: const TextStyle(
+                fontSize: 14,
+                color: Color(0xFFD32F2F),
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
         ],
@@ -240,12 +329,22 @@ class _MedicineScannerPageState extends State<MedicineScannerPage> {
           ),
           const SizedBox(height: 20),
           _buildInfoSection('Medicine Name', _medicineInfo!['name']),
-          _buildInfoSection('Generic Name', _medicineInfo!['generic_name']),
+          if (_medicineInfo!['generic_name'].isNotEmpty)
+            _buildInfoSection('Generic Name', _medicineInfo!['generic_name']),
+          if (_medicineInfo!['conditions_treated'].isNotEmpty)
+            _buildListSection('Conditions Treated', _medicineInfo!['conditions_treated']),
+          if (_medicineInfo!['diseases'].isNotEmpty)
+            _buildListSection('Diseases', _medicineInfo!['diseases']),
           _buildInfoSection('Usage', _medicineInfo!['usage']),
           _buildInfoSection('Dosage', _medicineInfo!['dosage']),
+          if (_medicineInfo!['time_to_improve'].isNotEmpty)
+            _buildInfoSection('Time to Improve', _medicineInfo!['time_to_improve']),
           _buildListSection('Side Effects', _medicineInfo!['side_effects']),
           _buildListSection('Precautions', _medicineInfo!['precautions']),
-          _buildListSection('Contraindications', _medicineInfo!['contraindications']),
+          if (_medicineInfo!['contraindications'].isNotEmpty)
+            _buildListSection('Contraindications', _medicineInfo!['contraindications']),
+          if (_medicineInfo!['interactions'].isNotEmpty)
+            _buildListSection('Interactions', _medicineInfo!['interactions']),
           _buildInfoSection('Storage', _medicineInfo!['storage']),
           _buildWarningSection(),
         ],
@@ -319,14 +418,14 @@ class _MedicineScannerPageState extends State<MedicineScannerPage> {
         border: Border.all(color: const Color(0xFFFF5252), width: 1),
       ),
       child: Row(
-        children:const  [
-           Icon(
+        children: const [
+          Icon(
             Icons.warning,
             color: Color(0xFFFF5252),
             size: 24,
           ),
-           SizedBox(width: 10),
-           Expanded(
+          SizedBox(width: 10),
+          Expanded(
             child: Text(
               'Always consult a healthcare professional before taking any medication. This information is for educational purposes only.',
               style: TextStyle(

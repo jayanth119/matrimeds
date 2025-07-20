@@ -78,7 +78,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         backgroundColor: Colors.white,
         elevation: 0,
         title: Text(
-          "Matrimeds".tr(), // ✅ Localized title
+          "Matrimeds".tr(), 
           style: const TextStyle(color: Color(0xFF2C3E50)),
         ),
         actions: [
@@ -161,7 +161,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('hello_user'.tr(args: ['User']),
+                Text('hello_user'.tr(),
                     style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
@@ -172,7 +172,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               ],
             ),
           ),
-          const Icon(Icons.notifications, color: Colors.white, size: 28),
+          // const Icon(Icons.notifications, color: Colors.white, size: 28),
         ],
       ),
     );

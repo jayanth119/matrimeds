@@ -123,7 +123,7 @@ class _SignupPageContent extends State<SignupPageContent> {
                   controller: usernameController,
                   decoration: const InputDecoration(
                       border: InputBorder.none,
-                      hintText: "Username",
+                      hintText: "Email",
                       contentPadding: EdgeInsets.all(20)),
                   onEditingComplete: () => FocusScope.of(context).nextFocus(),
                 ),
@@ -256,7 +256,7 @@ class _SignupPageContent extends State<SignupPageContent> {
           // Company name
           Container(
             child: const Text(
-              "Company name, Inc",
+              "Jaynikos Suraphos, Inc",
               style: TextStyle(color: Colors.white70, fontSize: 12),
               textAlign: TextAlign.center,
             ),
